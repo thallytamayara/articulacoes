@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz - Artrologia e Sistema Muscular</title>
+<style>
+  :root{
+    --c1:#0BBFAD;
+    --c2:#39BFB2;
+    --c3:#6CD9CE;
+    --c4:#A0F2EA;
+    --dark:#053B36;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--c1),var(--c4));
+    min-height:100vh;
+    color:var(--dark);
+    padding:16px;
+  }
+  .container{
+    max-width:700px;
+    margin:0 auto;
+  }
+  header{
+    text-align:center;
+    color:var(--white);
+    margin-bottom:20px;
+  }
+  header h1{
+    font-size:1.5rem;
+    margin:0 0 6px 0;
+    text-shadow:0 2px 6px rgba(0,0,0,0.2);
+  }
+  header p{
+    margin:0;
+    opacity:0.9;
+    font-size:0.9rem;
+  }
+  .card{
+    background:var(--white);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 8px 24px rgba(5,59,54,0.25);
+    margin-bottom:16px;
+  }
+  #progress-wrap{
+    background:var(--c4);
+    border-radius:10px;
+    height:12px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  #progress-bar{
+    background:var(--c1);
+    height:100%;
+    width:0%;
+    transition:width .3s ease;
+  }
+  #q-counter{
+    font-size:0.85rem;
+    color:var(--c2);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  #question-text{
+    font-size:1.1rem;
+    font-weight:600;
+    margin-bottom:16px;
+    line-height:1.4;
+    color:var(--dark);
+  }
+  .option{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f4fdfc;
+    border:2px solid var(--c4);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:all .2s ease;
+    font-size:0.98rem;
+  }
+  .option:hover{
+    border-color:var(--c2);
+    background:#e8fbf9;
+  }
+  .option .letter{
+    background:var(--c3);
+    color:var(--white);
+    min-width:28px;
+    height:28px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:0.85rem;
+    flex-shrink:0;
+  }
+  .option.correct{
+    background:#d6f7ee;
+    border-color:#0BBFAD;
+  }
+  .option.correct .letter{
+    background:var(--c1);
+  }
+  .option.wrong{
+    background:#fde3e3;
+    border-color:#e05c5c;
+  }
+  .option.wrong .letter{
+    background:#e05c5c;
+  }
+  .option.disabled{
+    pointer-events:none;
+  }
+  #feedback{
+    margin-top:12px;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:0.9rem;
+    display:none;
+  }
+  #feedback.show{display:block;}
+  #feedback.ok{background:#d6f7ee;color:#046b5e;}
+  #feedback.no{background:#fde3e3;color:#8a2626;}
+  .btn{
+    background:var(--c1);
+    color:var(--white);
+    border:none;
+    padding:12px 20px;
+    border-radius:12px;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+    margin-top:14px;
+    transition:background .2s ease;
+  }
+  .btn:hover{background:var(--c2);}
+  .btn:disabled{
+    background:#bdbdbd;
+    cursor:not-allowed;
+  }
+  .btn.secondary{
+    background:var(--white);
+    color:var(--c1);
+    border:2px solid var(--c1);
+  }
+  #start-screen, #result-screen{
+    text-align:center;
+  }
+  #start-screen p, #result-screen p{
+    color:#3a3a3a;
+    line-height:1.5;
+  }
+  .hidden{display:none !important;}
+  #score-big{
+    font-size:2.6rem;
+    font-weight:800;
+    color:var(--c1);
+    margin:10px 0;
+  }
+  #score-detail{
+    font-size:1rem;
+    color:#555;
+    margin-bottom:10px;
+  }
+  .badge{
+    display:inline-block;
+    padding:6px 16px;
+    border-radius:20px;
+    background:var(--c3);
+    color:var(--dark);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  footer{
+    text-align:center;
+    color:var(--white);
+    font-size:0.75rem;
+    opacity:0.85;
+    margin-top:10px;
+  }
+  @media (max-width:480px){
+    header h1{font-size:1.25rem;}
+    #question-text{font-size:1rem;}
+    .option{font-size:0.9rem;padding:10px 12px;}
+    #score-big{font-size:2.1rem;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🦴 Quiz — Artrologia e Sistema Muscular</h1>
+    <p>50 questões de múltipla escolha para revisar o conteúdo</p>
+  </header>
+
+  <div class="card" id="start-screen">
+    <p>Este quiz cobre <strong>Artrologia</strong> (articulações fibrosas, cartilaginosas e sinoviais) e <strong>Sistema Muscular</strong> (propriedades, nomenclatura, formas e músculos do corpo).</p>
+    <p>São <strong>50 perguntas</strong>, cada uma com 5 alternativas e apenas uma correta.</p>
+    <button class="btn" onclick="startQuiz()">Começar Quiz</button>
+  </div>
+
+  <div class="card hidden" id="quiz-screen">
+    <div id="progress-wrap"><div id="progress-bar"></div></div>
+    <div id="q-counter"></div>
+    <div id="question-text"></div>
+    <div id="options-wrap"></div>
+    <div id="feedback"></div>
+    <button class="btn hidden" id="next-btn" onclick="nextQuestion()">Próxima pergunta</button>
+  </div>
+
+  <div class="card hidden" id="result-screen">
+    <div class="badge" id="result-badge">Resultado</div>
+    <div id="score-big"></div>
+    <div id="score-detail"></div>
+    <button class="btn" onclick="restartQuiz()">Refazer Quiz</button>
+    <button class="btn secondary" onclick="reviewAnswers()">Revisar respostas</button>
+  </div>
+
+  <div class="card hidden" id="review-screen">
+    <h2 style="color:var(--c1);margin-top:0;">Revisão das respostas</h2>
+    <div id="review-list"></div>
+    <button class="btn" onclick="restartQuiz()">Refazer Quiz</button>
+  </div>
+
+  <footer>Feito para estudo — conteúdo baseado no material de Anatomia (Artrologia e Sistema Muscular).</footer>
+</div>
+
+<script>
+const questions = [
+  {q:"Como é chamada a junção de dois ossos?", options:["Miologia","Osteologia","Articulação","Aponeurose","Sinóvia"], correct:2},
+  {q:"As articulações fibrosas também são chamadas de:", options:["Diartrose","Anfiartrose","Sinartrose","Sincondrose","Sínfise"], correct:2},
+  {q:"As articulações cartilaginosas também são chamadas de:", options:["Sinartrose","Diartrose","Anfiartrose","Gonfose","Sindesmose"], correct:2},
+  {q:"As articulações sinoviais também são chamadas de:", options:["Sinartrose","Anfiartrose","Sincondrose","Diartrose","Sínfise"], correct:3},
+  {q:"Quais são os três tipos principais de articulações fibrosas?", options:["Suturas, Sindesmoses e Gonfoses","Sínfises, Sincondroses e Suturas","Diartroses, Sinartroses e Anfiartroses","Meniscos, Discos e Lábios","Cápsulas, Ligamentos e Bolsas"], correct:0},
+  {q:"O tecido que mantém os ossos unidos nas articulações fibrosas é chamado de:", options:["Cartilagem hialina","Ligamento sutural (conjuntivo fibroso)","Líquido sinovial","Fibrocartilagem","Membrana sinovial"], correct:1},
+  {q:"Onde é encontrado o tipo de articulação chamado sutura?", options:["Entre as vértebras","Entre a tíbia e a fíbula","Somente entre os ossos planos do crânio","Entre o rádio e a ulna","Nos dentes"], correct:2},
+  {q:"Como é chamada a condição em que, na maturidade, as fibras da sutura são substituídas e os ossos se fundem?", options:["Sinostose","Sincondrose","Sínfise","Gonfose","Anfiartrose"], correct:0},
+  {q:"A sindesmose tíbio-fibular e a sindesmose radio-ulnar são exemplos de:", options:["Suturas","Sindesmoses","Gonfoses","Sínfises","Sincondroses"], correct:1},
+  {q:"Nas sindesmoses, o tecido interposto é o conjuntivo fibroso, porém elas NÃO ocorrem:", options:["Nos membros superiores","Nos membros inferiores","Nos ossos do crânio","Nas vértebras","Na pelve"], correct:2},
+  {q:"A gonfose também é chamada de articulação em:", options:["Charneira","Sela","Cavilha","Pivô","Esferóide"], correct:2},
+  {q:"A gonfose é uma articulação fibrosa especializada restrita à fixação:", options:["Dos ossos do crânio","Dos dentes nas cavidades alveolares","Da tíbia com a fíbula","Do rádio com a ulna","Das vértebras"], correct:1},
+  {q:"Nas articulações cartilaginosas, os ossos são unidos por:", options:["Tecido conjuntivo fibroso","Cartilagem","Líquido sinovial","Membrana fibrosa","Ligamentos capsulares"], correct:1},
+  {q:"Quais são os dois tipos de articulações cartilaginosas?", options:["Suturas e Sindesmoses","Sincondroses e Sínfises","Gonfoses e Suturas","Diartroses e Sinartroses","Meniscos e Discos"], correct:1},
+  {q:"As sincondroses estão unidas por qual tipo de cartilagem?", options:["Cartilagem elástica","Fibrocartilagem","Cartilagem hialina","Cartilagem articular especializada","Cartilagem calcificada"], correct:2},
+  {q:"Muitas sincondroses são articulações temporárias porque a cartilagem é substituída por osso, o que ocorre em:", options:["Ossos curtos","Ossos planos","Ossos longos","Ossos irregulares","Ossos sesamóides"], correct:2},
+  {q:"As articulações entre as dez primeiras costelas e as cartilagens costais são exemplos de:", options:["Sínfises permanentes","Sincondroses permanentes","Suturas permanentes","Gonfoses permanentes","Sindesmoses permanentes"], correct:1},
+  {q:"A característica distintiva da sínfise é a presença de um disco:", options:["Ósseo","Sinovial","Fibrocartilaginoso","Elástico","Ligamentar"], correct:2},
+  {q:"São exemplos de sínfises, EXCETO:", options:["Articulação entre os ossos púbicos","Articulação entre os corpos vertebrais","Sínfise mandibular mediana (no desenvolvimento)","Sutura sagital do crânio","Todas são exemplos válidos"], correct:3},
+  {q:"Durante o desenvolvimento, as duas metades da mandíbula estão unidas por uma sínfise mediana que, na idade adulta, torna-se:", options:["Mais flexível","Completamente ossificada","Substituída por líquido sinovial","Substituída por cartilagem hialina","Removida"], correct:1},
+  {q:"Nas articulações sinoviais, as faces articulares dos ossos:", options:["Estão em continuidade direta","Não estão em continuidade","São unidas por sutura","São fundidas permanentemente","Não possuem cartilagem"], correct:1},
+  {q:"Nas articulações sinoviais, o contato entre os ossos é facilitado por:", options:["Tecido conjuntivo fibroso","Cartilagem hialina apenas","Um líquido viscoso chamado líquido sinovial","Ligamento sutural","Fibrocartilagem"], correct:2},
+  {q:"As articulações sinoviais são revestidas por uma:", options:["Membrana óssea","Cápsula fibrosa","Camada de gordura","Bainha tendínea","Fáscia muscular"], correct:1},
+  {q:"A cápsula articular apresenta-se com duas camadas, que são:", options:["Membrana óssea e membrana sinovial","Membrana fibrosa (externa) e membrana sinovial (interna)","Membrana elástica e membrana hialina","Cartilagem e ligamento","Menisco e disco"], correct:1},
+  {q:"Qual membrana da cápsula articular é responsável pela produção da sinóvia?", options:["Membrana fibrosa","Membrana sinovial","Membrana óssea","Periósteo","Perimísio"], correct:1},
+  {q:"A viscosidade do líquido sinovial, necessária à sua função lubrificadora, é conferida por:", options:["Colágeno","Ácido hialurônico","Elastina","Queratina","Fibrina"], correct:1},
+  {q:"São componentes essenciais das articulações sinoviais, EXCETO:", options:["Cápsula articular","Cartilagem articular","Cavidade articular","Líquido sinovial","Bolsa sinovial"], correct:4},
+  {q:"Estruturas em forma de meia-lua encontradas na articulação do joelho são chamadas de:", options:["Discos","Meniscos","Lábios","Bolsas","Bainhas"], correct:1},
+  {q:"São exemplos de articulações com disco intra-articular:", options:["Joelho e cotovelo","Esternoclavicular e ATM (temporomandibular)","Ombro e quadril","Punho e tornozelo","Cotovelo e punho"], correct:1},
+  {q:"Sacos achatados localizados entre músculos ou onde tendões passam sobre ossos, preenchidos por líquido sinovial, são chamados de:", options:["Meniscos","Discos articulares","Bolsas sinoviais","Cápsulas articulares","Bainhas tendíneas"], correct:2},
+  {q:"A bainha de tendão é uma bolsa sinovial modificada que envolve e lubrifica os tendões, principalmente de músculos que cruzam as articulações do:", options:["Cotovelo, joelho e tornozelo","Ombro, punho e tornozelo","Quadril, joelho e cotovelo","Coluna vertebral","Crânio"], correct:1},
+  {q:"Articulações monoaxiais (um grau de liberdade) permitem movimentos de:", options:["Flexão e extensão apenas","Flexão, extensão, adução e abdução","Flexão, extensão, abdução, adução e rotação","Apenas rotação","Apenas circundução"], correct:0},
+  {q:"O cotovelo e o joelho são exemplos de articulações:", options:["Biaxiais","Triaxiais","Monoaxiais","Sinartroses","Anfiartroses"], correct:2},
+  {q:"Articulações biaxiais (dois graus de liberdade) permitem movimentos de:", options:["Apenas flexão e extensão","Flexão, extensão, adução e abdução","Somente rotação","Flexão, extensão, abdução, adução e rotação","Nenhum movimento"], correct:1},
+  {q:"O punho e o tornozelo são exemplos de articulações:", options:["Monoaxiais","Biaxiais","Triaxiais","Sinartroses","Sincondroses"], correct:1},
+  {q:"O ombro e o quadril são exemplos de articulações:", options:["Monoaxiais","Biaxiais","Triaxiais","Sinartroses","Anfiartroses"], correct:2},
+  {q:"Articulações triaxiais permitem movimentos em torno de três eixos, incluindo:", options:["Apenas flexão","Flexão, extensão, abdução, adução e rotação","Apenas rotação e circundução","Somente adução","Apenas extensão"], correct:1},
+  {q:"Qual propriedade muscular está relacionada à capacidade de distensão?", options:["Contratilidade","Tonicidade","Elasticidade","Excitabilidade","Extensibilidade passiva"], correct:2},
+  {q:"Qual propriedade muscular está relacionada à contração?", options:["Elasticidade","Contratilidade","Tonicidade","Plasticidade","Rigidez"], correct:1},
+  {q:"A propriedade muscular relacionada ao tônus é chamada de:", options:["Elasticidade","Contratilidade","Tonicidade","Contração isométrica","Contração isotônica"], correct:2},
+  {q:"São tipos de contração muscular mencionados no material, EXCETO:", options:["Isotônica","Isométrica","Isocinética","Isovolumétrica","Todas foram mencionadas"], correct:3},
+  {q:"São funções do músculo estriado esquelético, EXCETO:", options:["Movimento e manutenção da postura","Produção de calor","Absorção de choques","Produção de hormônios","Auxílio na circulação"], correct:3},
+  {q:"Os componentes elásticos do músculo, que retornam à forma original após o relaxamento, incluem:", options:["Mitocôndrias e retículo sarcoplasmático","Miofilamentos e tecido conjuntivo","Sistema tubular apenas","Núcleo e citoplasma","Sarcolema apenas"], correct:1},
+  {q:"São exemplos de componentes plásticos do músculo (não retornam à forma original), EXCETO:", options:["Mitocôndrias","Retículo Sarcoplasmático","Sistema Tubular","Miofilamentos e tecido conjuntivo","Todas são componentes plásticos"], correct:3},
+  {q:"Segundo o material, quando ocorre uma deformação dos componentes plásticos dos músculos?", options:["Durante o sono profundo","Pela manhã, quando nos espreguiçamos","Após uma refeição","Durante exercícios anaeróbicos","Ao acordar de um pesadelo"], correct:1},
+  {q:"O nome do músculo trapézio, que faz referência à sua forma trapezoide, exemplifica qual critério de nomenclatura muscular?", options:["Ação","Localização","Forma","Fixações","Número de divisões"], correct:2},
+  {q:"O flexor radial do carpo é um exemplo de nomenclatura muscular baseada em:", options:["Forma","Ação","Localização","Relação de tamanho","Número de divisões"], correct:1},
+  {q:"Os músculos intercostais, localizados entre as costelas, exemplificam qual critério de nomenclatura?", options:["Forma","Ação","Localização","Fixações","Divisões"], correct:2},
+  {q:"O músculo esternocleidomastóideo recebe esse nome por causa de qual critério?", options:["Forma","Ação","Localização","Fixações (origem e inserção)","Tamanho"], correct:3},
+  {q:"Os músculos bíceps, tríceps e quadríceps têm seus nomes relacionados a:", options:["Forma","Localização","Número de divisões","Fixações","Ação"], correct:2},
+  {q:"Glúteo máximo e mínimo, fibular longo e curto, são exemplos de nomenclatura baseada em:", options:["Forma","Relação de tamanho","Localização","Ação","Fixações"], correct:1},
+  {q:"Músculos cujos fascículos correm ao longo do eixo do músculo, formando forma de tira ou fita, são classificados como:", options:["Unipenados","Bipenados","Longitudinais","Multipenados","Triangulares"], correct:2},
+  {q:"Músculos longitudinais produzem:", options:["Pouco movimento e muita potência","Considerável movimento, porém pouca potência","Nenhum movimento","Apenas rotação","Movimento e potência equivalentes sempre"], correct:1},
+  {q:"Quando os fascículos musculares se inserem de um só lado do tendão, diagonalmente, o músculo é classificado como:", options:["Longitudinal","Unipenado","Bipenado","Multipenado","Triangular"], correct:1},
+  {q:"Músculos unipenados produzem:", options:["Muito movimento e pouca potência","Menos movimento e maior potência","Nenhuma força","Apenas flexão","Movimento circular"], correct:1},
+  {q:"Quando os fascículos se inserem obliquamente de ambos os lados do tendão, o músculo é classificado como:", options:["Unipenado","Bipenado","Longitudinal","Triangular","Fusiforme"], correct:1},
+  {q:"Um músculo com arranjo complexo envolvendo a convergência de vários tendões é classificado como:", options:["Unipenado","Bipenado","Multipenado","Triangular","Longitudinal"], correct:2},
+  {q:"O músculo deltóide é classificado, segundo o arranjo de fibras, como:", options:["Fusiforme","Unipenado","Bipenado","Multipenado","Triangular"], correct:3},
+  {q:"O músculo reto femoral é classificado, segundo o arranjo de fibras, como:", options:["Fusiforme","Unipenado","Bipenado","Multipenado","Longitudinal"], correct:2},
+  {q:"O músculo semimembranoso é classificado, segundo o arranjo de fibras, como:", options:["Fusiforme","Unipenado","Bipenado","Multipenado","Triangular"], correct:1},
+  {q:"Bíceps, reto abdominal e sartório são exemplos de músculos com forma:", options:["Unipenada","Bipenada","Fusiforme","Multipenada","Radial"], correct:2},
+  {q:"Quando a fixação proximal do músculo se constitui numa forte conexão fibrosa contínua com o periósteo, ela é chamada de:", options:["Aponeurose","Tendão","Fáscia","Ligamento","Bainha"], correct:1},
+  {q:"Tendões que assumem a forma de bainhas delgadas e achatadas são chamados de:", options:["Ligamentos","Aponeuroses","Bolsas sinoviais","Meniscos","Fáscias"], correct:1},
+  {q:"O nome específico dado à fixação muscular situada na extremidade menos móvel e geralmente proximal é:", options:["Inserção","Origem","Ventre muscular","Tendão distal","Aponeurose"], correct:1},
+  {q:"O nome específico dado à fixação muscular situada na extremidade mais móvel e geralmente distal é:", options:["Origem","Inserção","Ventre muscular","Fáscia","Periósteo"], correct:1},
+  {q:"A redução do tamanho dos músculos devido à diminuição e morte de células musculares é chamada de:", options:["Hipertrofia","Distrofia muscular","Atrofia muscular","Miastenia grave","Hiperplasia"], correct:2},
+  {q:"Contrações musculares dolorosas involuntárias que demoram para relaxar são chamadas de:", options:["Atrofia","Distrofia","Câimbras","Miastenia","Hipertrofia"], correct:2},
+  {q:"As câimbras podem ser causadas por baixo suprimento de oxigênio ou por exercícios pesados, devido aos baixos níveis de quais íons no sangue?", options:["Cálcio e potássio","Sódio e cloreto","Magnésio e ferro","Zinco e cobre","Fósforo e enxofre"], correct:1},
+  {q:"A condição geneticamente transmitida caracterizada por enfraquecimento muscular progressivo é chamada de:", options:["Atrofia muscular simples","Distrofia muscular","Câimbra crônica","Tendinite","Bursite"], correct:1},
+  {q:"A condição crônica de extrema fraqueza muscular, causada por reação anormal do sistema imunitário na junção neuromuscular, é chamada de:", options:["Distrofia muscular","Atrofia muscular","Miastenia grave","Câimbra","Tendinite"], correct:2},
+  {q:"O envelhecimento dos músculos esqueléticos causa progressiva perda de massa muscular e substituição de músculo por:", options:["Osso","Cartilagem","Gordura","Tecido conjuntivo denso","Líquido sinovial"], correct:2},
+  {q:"O músculo quadríceps da coxa é formado por quatro músculos, EXCETO:", options:["Reto da coxa","Vasto lateral","Vasto medial","Vasto intermédio","Sartório"], correct:4},
+  {q:"O grupo muscular iliopsoas é formado por:", options:["Sartório, tensor da fáscia lata e reto da coxa","Psoas maior, psoas menor e ilíaco","Vasto lateral, medial e intermédio","Glúteo máximo, médio e mínimo","Semitendíneo e semimembranáceo"], correct:1},
+  {q:"A principal ação do músculo sartório é:", options:["Extensão da perna apenas","Flexão, abdução e rotação da coxa, e flexão da perna","Adução da coxa apenas","Rotação lateral do braço","Flexão do antebraço"], correct:1},
+  {q:"A principal ação do grupo iliopsoas é:", options:["Extensão da coxa","Flexão da coxa","Adução da coxa","Rotação lateral da coxa","Abdução da coxa"], correct:1},
+  {q:"O glúteo máximo tem como principal ação:", options:["Flexão e abdução do quadril","Extensão e rotação lateral da coxa","Adução da coxa","Flexão da perna","Rotação medial da coxa"], correct:1},
+  {q:"Os músculos posteriores da coxa (semitendíneo, semimembranáceo e bíceps da coxa) têm em comum a ação de:", options:["Flexão da coxa e extensão da perna","Extensão da coxa e flexão da perna","Adução da coxa apenas","Rotação medial do quadril","Flexão plantar do pé"], correct:1},
+  {q:"Qual porção do bíceps da coxa é responsável, além da extensão da coxa e flexão da perna, pela rotação lateral da perna?", options:["Apenas a cabeça longa","Apenas a cabeça curta","Ambas as cabeças igualmente","Nenhuma das cabeças","Somente em conjunto com o sartório"], correct:0},
+  {q:"Os músculos adutores da coxa (longo, curto e magno) têm como principal ação:", options:["Abdução da coxa","Adução da coxa","Extensão do joelho","Flexão plantar do pé","Rotação lateral do quadril"], correct:1},
+  {q:"O músculo grácil, além de aduzir a coxa, também realiza:", options:["Extensão e rotação lateral da perna","Flexão e rotação medial da perna","Abdução do quadril","Extensão da coxa","Flexão plantar do pé"], correct:1},
+  {q:"Os músculos anteriores da perna (tibial anterior, extensor longo dos dedos, extensor longo do hálux) têm em comum a ação de:", options:["Flexão plantar do pé","Dorsiflexão do pé","Eversão isolada do pé","Inversão isolada do pé","Extensão do joelho"], correct:1},
+  {q:"O músculo tibial anterior, além da dorsiflexão, realiza qual movimento do pé?", options:["Eversão","Inversão","Flexão plantar","Pronação total","Circundução isolada"], correct:1},
+  {q:"Os músculos fibular longo e fibular curto (região lateral da perna) têm como ação comum:", options:["Dorsiflexão e inversão do pé","Flexão plantar e eversão do pé","Extensão do joelho","Flexão do quadril","Rotação medial da perna"], correct:1},
+  {q:"Os músculos posteriores da perna, como o gastrocnêmio e o sóleo, têm como principal ação:", options:["Dorsiflexão do pé","Flexão plantar do pé","Extensão do joelho","Adução do quadril","Rotação lateral da coxa"], correct:1},
+  {q:"O músculo poplíteo tem como função a flexão do joelho, também descrita no material como:", options:["Travamento do joelho","Destrava o joelho","Bloqueio da articulação","Hiperextensão do joelho","Rotação do quadril"], correct:1},
+  {q:"O músculo tibial posterior realiza flexão plantar e qual outro movimento do pé?", options:["Eversão","Inversão","Dorsiflexão","Abdução","Pronação"], correct:1},
+  {q:"O músculo trapézio, na região escapular, tem como ação:", options:["Protrai e roda lateralmente a escápula","Eleva, retrai e roda lateralmente a escápula","Desloca a escápula para baixo e para frente","Roda medialmente a escápula apenas","Fixa a clavícula à primeira costela"], correct:1},
+  {q:"O músculo serrátil anterior tem como ação principal:", options:["Elevar e retrair a escápula","Protrair e rodar lateralmente a escápula","Deslocar a escápula para baixo e para frente","Rodar medialmente a escápula","Fixar o úmero à escápula"], correct:1},
+  {q:"O músculo deltóide, em sua parte média, realiza qual movimento do braço?", options:["Flexão e rotação medial","Abdução","Extensão e rotação lateral","Adução apenas","Pronação"], correct:1},
+  {q:"O músculo peitoral maior tem como ação principal:", options:["Abdução e rotação lateral do braço","Adução e rotação medial do braço","Extensão do antebraço","Flexão do antebraço","Elevação da escápula"], correct:1},
+  {q:"O músculo bíceps braquial tem como ação:", options:["Extensão e pronação do antebraço","Flexão e supinação do antebraço","Extensão do braço apenas","Adução do braço apenas","Flexão do punho"], correct:1},
+  {q:"O músculo tríceps braquial tem como ação principal:", options:["Flexão do antebraço","Extensão do antebraço","Pronação do antebraço","Supinação do antebraço","Flexão do braço"], correct:1},
+  {q:"O músculo coracobraquial tem como ação:", options:["Extensão e abdução do braço","Flexão e adução do braço","Rotação lateral do antebraço","Extensão do punho","Pronação do antebraço"], correct:1},
+  {q:"O músculo pronador redondo, no antebraço, tem como ação:", options:["Supinação e extensão do antebraço","Pronação e flexão do antebraço","Extensão dos dedos","Flexão do punho apenas","Abdução do polegar"], correct:1},
+  {q:"O músculo supinador, no antebraço, tem como ação:", options:["Pronação do antebraço","Supinação do antebraço","Flexão do antebraço","Extensão do antebraço","Adução da mão"], correct:1},
+  {q:"O músculo flexor radial do carpo tem como ação:", options:["Extensão e adução da mão","Flexão e abdução da mão","Extensão dos dedos","Pronação do antebraço","Abdução do polegar"], correct:1}
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];
+
+function shuffleQuestions(){
+  for(let i=questions.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [questions[i],questions[j]]=[questions[j],questions[i]];
+  }
+}
+
+function startQuiz(){
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('review-screen').classList.add('hidden');
+  current = 0;
+  score = 0;
+  userAnswers = [];
+  loadQuestion();
+}
+
+function loadQuestion(){
+  answered = false;
+  const q = questions[current];
+  document.getElementById('q-counter').textContent = `Pergunta ${current+1} de ${questions.length}`;
+  document.getElementById('progress-bar').style.width = ((current)/questions.length*100)+'%';
+  document.getElementById('question-text').textContent = q.q;
+  const wrap = document.getElementById('options-wrap');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.options.forEach((opt, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = `<span class="letter">${letters[idx]}</span><span>${opt}</span>`;
+    div.onclick = ()=>selectAnswer(idx);
+    wrap.appendChild(div);
+  });
+  document.getElementById('feedback').className = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next-btn').classList.add('hidden');
+}
+
+function selectAnswer(idx){
+  if(answered) return;
+  answered = true;
+  const q = questions[current];
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show');
+  if(idx === q.correct){
+    opts[idx].classList.add('correct');
+    score++;
+    fb.classList.add('ok');
+    fb.textContent = '✅ Resposta correta!';
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    fb.classList.add('no');
+    fb.textContent = '❌ Resposta incorreta. A correta está destacada em verde.';
+  }
+  userAnswers.push({question:q.q, options:q.options, correct:q.correct, chosen:idx});
+  document.getElementById('next-btn').classList.remove('hidden');
+}
+
+function nextQuestion(){
+  current++;
+  if(current < questions.length){
+    loadQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+  document.getElementById('progress-bar').style.width = '100%';
+  const pct = Math.round((score/questions.length)*100);
+  document.getElementById('score-big').textContent = `${score} / ${questions.length}`;
+  let msg = '';
+  if(pct >= 90) msg = 'Excelente! Você domina o conteúdo. 🏆';
+  else if(pct >= 70) msg = 'Muito bom! Continue revisando os detalhes. 👏';
+  else if(pct >= 50) msg = 'Razoável. Vale revisar o material novamente. 📚';
+  else msg = 'Continue estudando, você vai melhorar! 💪';
+  document.getElementById('score-detail').textContent = `${pct}% de acertos — ${msg}`;
+}
+
+function restartQuiz(){
+  document.getElementById('review-screen').classList.add('hidden');
+  startQuiz();
+}
+
+function reviewAnswers(){
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('review-screen').classList.remove('hidden');
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  userAnswers.forEach((a,i)=>{
+    const div = document.createElement('div');
+    div.style.marginBottom = '18px';
+    div.style.paddingBottom = '14px';
+    div.style.borderBottom = '1px solid #e0f5f2';
+    const isCorrect = a.chosen === a.correct;
+    div.innerHTML = `
+      <p style="font-weight:600;margin:0 0 8px 0;">${i+1}. ${a.question}</p>
+      <p style="margin:2px 0;color:${isCorrect?'#046b5e':'#8a2626'};">
+        Sua resposta: ${letters[a.chosen]}) ${a.options[a.chosen]} ${isCorrect?'✅':'❌'}
+      </p>
+      ${!isCorrect?`<p style="margin:2px 0;color:#046b5e;">Correta: ${letters[a.correct]}) ${a.options[a.correct]}</p>`:''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+// Embaralha a ordem das perguntas a cada carregamento
+shuffleQuestions();
+</script>
+</body>
+</html>
